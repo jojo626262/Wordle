@@ -201,7 +201,10 @@ function renderGuesserView(secret, gameId, lang, fromName) {
             if (game.status !== "playing") {
                 setTimeout(() => {
                     const won = game.status === "won";
-                    if (won) bounceRow(finishedRowIndex);
+                    if (won) {
+                        bounceRow(finishedRowIndex);
+                        triggerConfetti();
+                    }
                     updateStats(won, game.attemptsUsed);
                     updateFriendStats(fromName, won);
                     renderStatsWidget();
