@@ -1,9 +1,14 @@
 function getGameIdFromHash() {
-    const match = window.location.hash.match(/w=([^&]+)/);
+    const match = window.location.hash.match(/id=([^&]+)/);
     return match ? match[1] : null;
 }
 
 function renderWordCreationCard(container, heading) {
+    const nameInput = document.createElement("input");
+    nameInput.placeholder = "Dein Name (optional)";
+    nameInput.classList.add("name-input");
+    nameInput.value = localStorage.getItem("myName") || "";
+
     const input = document.createElement("input");
     input.maxLength = WORD_LENGTH;
     input.placeholder = "Geheimwort (5 Buchstaben)";
@@ -49,7 +54,9 @@ function renderWordCreationCard(container, heading) {
             return;
         }
         message.textContent = "";
-        const link = buildShareUrl(word, selectedLang);
+        const name = nameInput.value.trim();
+        localStorage.setItem("myName", name);
+        const link = buildShareUrl(word, selectedLang, name);
         linkBox.textContent = link;
 
         if (navigator.clipboard) {
@@ -74,6 +81,7 @@ function renderWordCreationCard(container, heading) {
     }
 
     card.appendChild(langBox);
+    card.appendChild(nameInput);
     card.appendChild(input);
     card.appendChild(button);
     card.appendChild(message);
@@ -81,13 +89,19 @@ function renderWordCreationCard(container, heading) {
     container.appendChild(card);
 }
 
+function setHeaderVisible(visible) {
+    document.querySelector("header").style.display = visible ? "" : "none";
+}
+
 function renderSetterView() {
+    setHeaderVisible(true);
     const app = document.getElementById("board-container");
     app.innerHTML = "";
     renderWordCreationCard(app);
 }
 
 function renderResultView(secret, won, tries) {
+    setHeaderVisible(true);
     const app = document.getElementById("board-container");
     app.innerHTML = "";
 
@@ -115,20 +129,44 @@ function renderResultView(secret, won, tries) {
     card.appendChild(title);
     card.appendChild(detail);
     card.appendChild(wordReveal);
-    app.appendChild(card);
 
-    renderWordCreationCard(app, "Neue Runde: Wort für deinen Freund eingeben");
+    const layout = document.createElement("div");
+    layout.classList.add("result-layout");
+    layout.appendChild(card);
+    app.appendChild(layout);
+
+    renderWordCreationCard(layout, "Nächste Runde");
 }
 
-function renderGuesserView(secret, gameId, lang) {
+function renderGuesserView(secret, gameId, lang, fromName) {
     const existing = loadResults(gameId);
     if (existing) {
         renderResultView(secret, existing.won, existing.tries);
         return;
     }
 
+    setHeaderVisible(false);
     const app = document.getElementById("board-container");
     app.innerHTML = "";
+
+    if (fromName) {
+        const fromLabel = document.createElement("p");
+        fromLabel.classList.add("from-label");
+        fromLabel.textContent = `Wort von ${fromName}`;
+        app.appendChild(fromLabel);
+    }
+
+    const toast = document.createElement("div");
+    toast.classList.add("toast");
+    app.appendChild(toast);
+    let toastTimer = null;
+
+    const showToast = (text) => {
+        toast.textContent = text;
+        toast.classList.add("visible");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("visible"), 1200);
+    };
 
     renderBoard();
 
@@ -140,11 +178,20 @@ function renderGuesserView(secret, gameId, lang) {
         if (game.status !== "playing") return;
 
         if (key === "ENTER") {
-            if (currentGuess.length !== WORD_LENGTH) return;
-            if (!isValidWord(currentGuess, lang)) return;
+            if (currentGuess.length !== WORD_LENGTH) {
+                shakeRow(rowIndex);
+                showToast("Zu wenig Buchstaben");
+                return;
+            }
+            if (!isValidWord(currentGuess, lang)) {
+                shakeRow(rowIndex);
+                showToast("Nicht in der Wortliste");
+                return;
+            }
 
             const result = game.guess(currentGuess);
             const finishedGuess = currentGuess;
+            const finishedRowIndex = rowIndex;
             renderRow(rowIndex, currentGuess, result, (col) => {
                 markKey(finishedGuess[col], result[col]);
             });
@@ -154,10 +201,14 @@ function renderGuesserView(secret, gameId, lang) {
             if (game.status !== "playing") {
                 setTimeout(() => {
                     const won = game.status === "won";
-                    updateStats(won);
+                    if (won) bounceRow(finishedRowIndex);
+                    updateStats(won, game.attemptsUsed);
+                    updateFriendStats(fromName, won);
                     renderStatsWidget();
                     saveResults(gameId, { won, tries: game.attemptsUsed });
-                    renderResultView(secret, won, game.attemptsUsed);
+                    setTimeout(() => {
+                        renderResultView(secret, won, game.attemptsUsed);
+                    }, won ? 800 : 0);
                 }, rowAnimationTime());
             }
         } else if (key === "BACKSPACE") {
@@ -178,7 +229,43 @@ function renderStatsWidget() {
         document.body.appendChild(widget);
     }
     const stats = loadStats();
-    widget.textContent = `Gespielt: ${stats.gamesPlayed} | Gewonnen: ${stats.gamesWon} | Verloren: ${stats.gamesLost}`;
+    widget.innerHTML = "";
+
+    const totalLine = document.createElement("div");
+    totalLine.textContent = `Gesamt: ${stats.gamesPlayed} | Gewonnen: ${stats.gamesWon} | Verloren: ${stats.gamesLost}`;
+    widget.appendChild(totalLine);
+
+    const friendStats = loadFriendStats();
+    for (const name in friendStats) {
+        const s = friendStats[name];
+        const line = document.createElement("div");
+        line.textContent = `Gegen ${name}: ${s.gamesWon}/${s.gamesPlayed} gewonnen`;
+        widget.appendChild(line);
+    }
+
+    const distribution = stats.distribution || [0, 0, 0, 0, 0, 0];
+    const maxCount = Math.max(1, ...distribution);
+    const chart = document.createElement("div");
+    chart.classList.add("distribution-chart");
+
+    distribution.forEach((count, i) => {
+        const barRow = document.createElement("div");
+        barRow.classList.add("bar-row");
+
+        const label = document.createElement("span");
+        label.textContent = i + 1;
+
+        const bar = document.createElement("div");
+        bar.classList.add("bar");
+        bar.style.width = (count / maxCount) * 100 + "%";
+        bar.textContent = count;
+
+        barRow.appendChild(label);
+        barRow.appendChild(bar);
+        chart.appendChild(barRow);
+    });
+
+    widget.appendChild(chart);
 }
 
 function initTheme() {
@@ -209,7 +296,7 @@ function init() {
     if (!secret) {
         renderSetterView();
     } else {
-        renderGuesserView(secret, getGameIdFromHash(), getLangFromUrl());
+        renderGuesserView(secret, getGameIdFromHash(), getLangFromUrl(), getNameFromUrl());
     }
 }
 

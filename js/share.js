@@ -11,10 +11,19 @@ function decodeWord(word){
     }
 }
 
-function buildShareUrl(word, lang){
+function generateGameId(){
+    return Math.random().toString(36).slice(2, 10);
+}
+
+function buildShareUrl(word, lang, name){
     const url = new URL(window.location.href);
-    url.hash = "w=" + encodeWord(word) + "&lang=" + lang;
+    url.hash = "w=" + encodeWord(word) + "&lang=" + lang + "&id=" + generateGameId() + "&from=" + encodeURIComponent(name || "");
     return url.toString();
+}
+
+function getNameFromUrl(){
+    const match = window.location.hash.match(/from=([^&]*)/);
+    return match ? decodeURIComponent(match[1]) : "";
 }
 
 function getWordFromUrl(){

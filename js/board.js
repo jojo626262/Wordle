@@ -22,8 +22,8 @@ function renderBoard() {
 }
 
 
-const FLIP_STAGGER_MS = 300;
-const FLIP_DURATION_MS = 500;
+const FLIP_STAGGER_MS = 350;
+const FLIP_DURATION_MS = 700;
 
 function rowAnimationTime() {
     return (5 - 1) * FLIP_STAGGER_MS + FLIP_DURATION_MS;
@@ -49,5 +49,24 @@ function renderRow(rowIndex, word, results, onLetterRevealed){
 function renderPreview(rowIndex, guess) {
     for (let col = 0; col < 5; col++) {
         cells[rowIndex * 5 + col].textContent = guess[col] || "";
+    }
+}
+
+function shakeRow(rowIndex) {
+    for (let col = 0; col < 5; col++) {
+        const cell = cells[rowIndex * 5 + col];
+        cell.classList.add("shake");
+        setTimeout(() => cell.classList.remove("shake"), 600);
+    }
+}
+
+const BOUNCE_STAGGER_MS = 100;
+
+function bounceRow(rowIndex) {
+    for (let col = 0; col < 5; col++) {
+        const cell = cells[rowIndex * 5 + col];
+        setTimeout(() => {
+            cell.classList.add("bounce");
+        }, col * BOUNCE_STAGGER_MS);
     }
 }

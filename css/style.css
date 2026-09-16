@@ -1,8 +1,8 @@
 :root {
-    --bg: #ffffff;
+    --bg: #f5f0e6;
     --text: #1a1a1a;
-    --cell-border: #d3d6da;
-    --key-bg: #d3d6da;
+    --cell-border: #d3c9b4;
+    --key-bg: #e8dfcd;
     --key-text: #1a1a1a;
     --correct: #6aaa64;
     --present: #c9b458;
@@ -54,6 +54,7 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
+    position: relative;
 }
 
 header {
@@ -96,6 +97,35 @@ header h1 span {
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 0.75rem;
+    max-width: 180px;
+}
+
+.distribution-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 6px;
+}
+
+.bar-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bar-row span {
+    width: 10px;
+    text-align: right;
+}
+
+.bar-row .bar {
+    background: var(--correct);
+    color: #ffffff;
+    font-size: 0.7rem;
+    padding: 1px 4px;
+    border-radius: 3px;
+    min-width: 14px;
+    text-align: right;
 }
 
 .board {
@@ -125,7 +155,7 @@ header h1 span {
 }
 
 .cell.flip {
-    animation: flip 0.5s ease;
+    animation: flip 0.7s ease;
 }
 
 @keyframes flip {
@@ -138,6 +168,50 @@ header h1 span {
     100% {
         transform: rotateX(0deg);
     }
+}
+
+.cell.shake {
+    animation: shake 0.6s ease-in-out;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+}
+
+.cell.bounce {
+    animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-18px); }
+    50% { transform: translateY(0); }
+    60% { transform: translateY(-6px); }
+    80% { transform: translateY(0); }
+}
+
+.toast {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--bg);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+}
+
+.toast.visible {
+    opacity: 1;
 }
 
 .cell.correct {
@@ -228,6 +302,10 @@ header h1 span {
     margin-top: 40px;
 }
 
+.result-layout .setter-card {
+    margin-top: 0;
+}
+
 .lang-box {
     display: flex;
     gap: 12px;
@@ -278,6 +356,18 @@ header h1 span {
     border-color: var(--correct);
 }
 
+.setter-card input.name-input {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 1rem;
+}
+
+.from-label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
 .primary-btn {
     padding: 12px 24px;
     font-size: 1rem;
@@ -310,28 +400,49 @@ header h1 span {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    gap: 10px;
     background: var(--key-bg);
-    padding: 32px 24px;
+    padding: 40px 28px;
     border-radius: 12px;
-    max-width: 320px;
+    max-width: 360px;
+    width: 100%;
+}
+
+.result-layout {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 24px;
+    margin-top: 40px;
+    width: 100%;
+}
+
+.result-layout > .result-card,
+.result-layout > .setter-card {
+    flex: 0 1 360px;
+    width: auto;
 }
 
 .result-icon {
-    font-size: 3rem;
-    margin-bottom: 8px;
+    font-size: 4rem;
+    line-height: 1;
 }
 
 .result-card h2 {
-    margin: 0 0 8px;
+    margin: 0;
+    font-size: 1.6rem;
 }
 
 .result-detail {
-    margin: 0 0 12px;
+    margin: 0;
+    font-size: 1rem;
+    opacity: 0.85;
 }
 
 .result-word {
-    font-size: 1.4rem;
+    font-size: 1.8rem;
     font-weight: bold;
-    letter-spacing: 0.1em;
-    margin: 0 0 12px;
+    letter-spacing: 0.15em;
+    margin: 6px 0 0;
 }
