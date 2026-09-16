@@ -26,6 +26,12 @@ function renderBoard() {
     for(let col = 0; col < 5; col++){
         const cell = cells[rowIndex * 5 + col];
         cell.textContent = word[col];
-        cell.classList.add(results[col]); 
+        cell.classList.add(results[col]);
+    }
+}
+
+function renderPreview(rowIndex, guess) {
+    for (let col = 0; col < 5; col++) {
+        cells[rowIndex * 5 + col].textContent = guess[col] || "";
     }
 }

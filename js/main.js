@@ -25,7 +25,7 @@ function renderSetterView() {
             return;
         }
         message.textContent = "";
-        linkBox.textContent = buildShareWord(word);
+        linkBox.textContent = buildShareUrl(word);
     });
 
     app.appendChild(input);
@@ -90,8 +90,10 @@ function renderGuesserView(secret, gameId) {
             }
         } else if (key === "BACKSPACE") {
             currentGuess = currentGuess.slice(0, -1);
+            renderPreview(rowIndex, currentGuess);
         } else if (currentGuess.length < WORD_LENGTH) {
             currentGuess += key;
+            renderPreview(rowIndex, currentGuess);
         }
     });
 }
