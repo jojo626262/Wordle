@@ -56,5 +56,24 @@ const updateFriendStats = (name, won) => {
     saveFriendStats(all);
 }
 
+const loadSentStats = () => {
+    const raw = localStorage.getItem("sentStats");
+    return raw ? JSON.parse(raw) : {};
+}
+
+const saveSentStats = (data) => {
+    localStorage.setItem("sentStats", JSON.stringify(data));
+}
+
+const updateSentStats = (name, won) => {
+    if (!name) return;
+    const all = loadSentStats();
+    if (!all[name]) all[name] = { gamesPlayed: 0, gamesWon: 0, gamesLost: 0 };
+    all[name].gamesPlayed += 1;
+    if (won) all[name].gamesWon += 1;
+    else all[name].gamesLost += 1;
+    saveSentStats(all);
+}
+
 
 console.log("Stats loaded:", loadStats());

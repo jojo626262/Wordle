@@ -15,10 +15,25 @@ function generateGameId(){
     return Math.random().toString(36).slice(2, 10);
 }
 
-function buildShareUrl(word, lang, name){
+function buildShareUrl(word, lang, name, prevResult){
     const url = new URL(window.location.href);
-    url.hash = "w=" + encodeWord(word) + "&lang=" + lang + "&id=" + generateGameId() + "&from=" + encodeURIComponent(name || "");
+    let hash = "w=" + encodeWord(word) + "&lang=" + lang + "&id=" + generateGameId() + "&from=" + encodeURIComponent(name || "");
+    if (prevResult) {
+        hash += "&prevWon=" + (prevResult.won ? "1" : "0") + "&prevTries=" + prevResult.tries;
+    }
+    url.hash = hash;
     return url.toString();
+}
+
+function getPrevResultFromUrl(){
+    const hash = window.location.hash;
+    const wonMatch = hash.match(/prevWon=([01])/);
+    if (!wonMatch) return null;
+    const triesMatch = hash.match(/prevTries=(\d+)/);
+    return {
+        won: wonMatch[1] === "1",
+        tries: triesMatch ? parseInt(triesMatch[1], 10) : 0
+    };
 }
 
 function getNameFromUrl(){

@@ -3,7 +3,7 @@ function getGameIdFromHash() {
     return match ? match[1] : null;
 }
 
-function renderWordCreationCard(container, heading) {
+function renderWordCreationCard(container, heading, prevResult) {
     const nameInput = document.createElement("input");
     nameInput.placeholder = "Dein Name (optional)";
     nameInput.classList.add("name-input");
@@ -56,7 +56,7 @@ function renderWordCreationCard(container, heading) {
         message.textContent = "";
         const name = nameInput.value.trim();
         localStorage.setItem("myName", name);
-        const link = buildShareUrl(word, selectedLang, name);
+        const link = buildShareUrl(word, selectedLang, name, prevResult);
         linkBox.textContent = link;
 
         if (navigator.clipboard) {
@@ -135,7 +135,7 @@ function renderResultView(secret, won, tries) {
     layout.appendChild(card);
     app.appendChild(layout);
 
-    renderWordCreationCard(layout, "Nächste Runde");
+    renderWordCreationCard(layout, "Nächste Runde", { won, tries });
 }
 
 function renderGuesserView(secret, gameId, lang, fromName) {
@@ -246,6 +246,14 @@ function renderStatsWidget() {
         widget.appendChild(line);
     }
 
+    const sentStats = loadSentStats();
+    for (const name in sentStats) {
+        const s = sentStats[name];
+        const line = document.createElement("div");
+        line.textContent = `${name}: ${s.gamesWon}/${s.gamesPlayed}`;
+        widget.appendChild(line);
+    }
+
     const distribution = stats.distribution || [0, 0, 0, 0, 0, 0];
     const maxCount = Math.max(1, ...distribution);
     const chart = document.createElement("div");
@@ -288,6 +296,11 @@ function initTheme() {
 }
 
 function init() {
+    const prevResult = getPrevResultFromUrl();
+    if (prevResult) {
+        updateSentStats(getNameFromUrl(), prevResult.won);
+    }
+
     renderStatsWidget();
 
     if (window.location.hash === "#test") {
