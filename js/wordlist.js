@@ -1613,6 +1613,57 @@ function getWordList(lang) {
   return WORD_LISTS[lang] || WORD_LISTS.de;
 }
 
+// Persönliche Anpassungen an der Wortliste (Console-Befehle), gespeichert im
+// localStorage. Überschreibt/ergänzt die feste Liste oben, ohne sie zu verändern.
+function loadWordOverrides() {
+  const raw = localStorage.getItem("wordOverrides");
+  return raw ? JSON.parse(raw) : { de: { removed: [], added: [] }, en: { removed: [], added: [] } };
+}
+
+function saveWordOverrides(overrides) {
+  localStorage.setItem("wordOverrides", JSON.stringify(overrides));
+}
+
+function removeWord(word, lang) {
+  lang = lang || "de";
+  word = word.toUpperCase();
+  const overrides = loadWordOverrides();
+  if (!overrides[lang]) overrides[lang] = { removed: [], added: [] };
+  if (!overrides[lang].removed.includes(word)) overrides[lang].removed.push(word);
+  overrides[lang].added = overrides[lang].added.filter((w) => w !== word);
+  saveWordOverrides(overrides);
+  console.log(`"${word}" wurde aus der ${lang}-Liste entfernt.`);
+}
+
+function addWord(word, lang) {
+  lang = lang || "de";
+  word = word.toUpperCase();
+  if (word.length !== WORD_LENGTH) {
+    console.log(`"${word}" hat nicht genau ${WORD_LENGTH} Buchstaben.`);
+    return;
+  }
+  const overrides = loadWordOverrides();
+  if (!overrides[lang]) overrides[lang] = { removed: [], added: [] };
+  if (!overrides[lang].added.includes(word)) overrides[lang].added.push(word);
+  overrides[lang].removed = overrides[lang].removed.filter((w) => w !== word);
+  saveWordOverrides(overrides);
+  console.log(`"${word}" wurde zur ${lang}-Liste hinzugefügt.`);
+}
+
+function listWordOverrides() {
+  console.log(loadWordOverrides());
+}
+
+function resetWordOverrides() {
+  localStorage.removeItem("wordOverrides");
+  console.log("Wortlisten-Anpassungen wurden zurückgesetzt.");
+}
+
 function isValidWord(word, lang) {
-  return getWordList(lang).includes(word.toUpperCase());
+  lang = lang || "de";
+  word = word.toUpperCase();
+  const overrides = loadWordOverrides()[lang] || { removed: [], added: [] };
+  if (overrides.removed.includes(word)) return false;
+  if (overrides.added.includes(word)) return true;
+  return getWordList(lang).includes(word);
 }

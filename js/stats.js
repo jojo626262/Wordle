@@ -76,4 +76,12 @@ const updateSentStats = (name, won) => {
 }
 
 
+function resetAllStats() {
+    localStorage.removeItem("stats");
+    localStorage.removeItem("friendStats");
+    localStorage.removeItem("sentStats");
+    console.log("Alle Statistiken wurden zurückgesetzt.");
+    if (typeof renderStatsWidget === "function") renderStatsWidget();
+}
+
 console.log("Stats loaded:", loadStats());
