@@ -93,8 +93,14 @@ function setHeaderVisible(visible) {
     document.querySelector("header").style.display = visible ? "" : "none";
 }
 
+function setStatsWidgetVisible(visible) {
+    const widget = document.getElementById("stats-widget");
+    if (widget) widget.style.display = visible ? "" : "none";
+}
+
 function renderSetterView() {
     setHeaderVisible(true);
+    setStatsWidgetVisible(true);
     const app = document.getElementById("board-container");
     app.innerHTML = "";
     renderWordCreationCard(app);
@@ -102,6 +108,7 @@ function renderSetterView() {
 
 function renderResultView(secret, won, tries) {
     setHeaderVisible(true);
+    setStatsWidgetVisible(true);
     const app = document.getElementById("board-container");
     app.innerHTML = "";
 
@@ -146,6 +153,7 @@ function renderGuesserView(secret, gameId, lang, fromName) {
     }
 
     setHeaderVisible(false);
+    setStatsWidgetVisible(false);
     const app = document.getElementById("board-container");
     app.innerHTML = "";
 

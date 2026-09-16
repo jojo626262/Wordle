@@ -246,8 +246,9 @@ header h1 span {
 .keyboard-row {
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: clamp(3px, 1.2vw, 8px);
     width: 100%;
+    padding: 0 4px;
 }
 
 .key {
@@ -255,19 +256,20 @@ header h1 span {
     color: var(--key-text);
     border: none;
     border-radius: 4px;
-    width: 46px;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 46px;
     height: 58px;
-    font-size: 1.1rem;
+    font-size: clamp(0.7rem, 4.5vw, 1.1rem);
     font-weight: bold;
     text-transform: uppercase;
     cursor: pointer;
-    flex: none;
-    white-space: nowrap;
 }
 
 .key-wide {
-    width: 68px;
-    font-size: 0.8rem;
+    flex-grow: 1.5;
+    max-width: 68px;
+    font-size: clamp(0.55rem, 3vw, 0.8rem);
 }
 
 .key.correct {
