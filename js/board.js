@@ -22,11 +22,27 @@ function renderBoard() {
 }
 
 
- function renderRow(rowIndex, word, results){
+const FLIP_STAGGER_MS = 300;
+const FLIP_DURATION_MS = 500;
+
+function rowAnimationTime() {
+    return (5 - 1) * FLIP_STAGGER_MS + FLIP_DURATION_MS;
+}
+
+function renderRow(rowIndex, word, results, onLetterRevealed){
     for(let col = 0; col < 5; col++){
         const cell = cells[rowIndex * 5 + col];
         cell.textContent = word[col];
-        cell.classList.add(results[col]);
+        const delay = col * FLIP_STAGGER_MS;
+
+        setTimeout(() => {
+            cell.classList.add("flip");
+        }, delay);
+
+        setTimeout(() => {
+            cell.classList.add(results[col]);
+            if (onLetterRevealed) onLetterRevealed(col);
+        }, delay + FLIP_DURATION_MS / 2);
     }
 }
 

@@ -3,10 +3,7 @@ function getGameIdFromHash() {
     return match ? match[1] : null;
 }
 
-function renderSetterView() {
-    const app = document.getElementById("board-container");
-    app.innerHTML = "";
-
+function renderWordCreationCard(container, heading) {
     const input = document.createElement("input");
     input.maxLength = WORD_LENGTH;
     input.placeholder = "Geheimwort (5 Buchstaben)";
@@ -67,11 +64,27 @@ function renderSetterView() {
         if (event.key === "Enter") submit();
     });
 
-    app.appendChild(langBox);
-    app.appendChild(input);
-    app.appendChild(button);
-    app.appendChild(message);
-    app.appendChild(linkBox);
+    const card = document.createElement("div");
+    card.classList.add("setter-card");
+
+    if (heading) {
+        const headingEl = document.createElement("h3");
+        headingEl.textContent = heading;
+        card.appendChild(headingEl);
+    }
+
+    card.appendChild(langBox);
+    card.appendChild(input);
+    card.appendChild(button);
+    card.appendChild(message);
+    card.appendChild(linkBox);
+    container.appendChild(card);
+}
+
+function renderSetterView() {
+    const app = document.getElementById("board-container");
+    app.innerHTML = "";
+    renderWordCreationCard(app);
 }
 
 function renderResultView(secret, won, tries) {
@@ -98,19 +111,13 @@ function renderResultView(secret, won, tries) {
     wordReveal.classList.add("result-word");
     wordReveal.textContent = secret;
 
-    const newGameBtn = document.createElement("button");
-    newGameBtn.textContent = "Neues Spiel starten";
-    newGameBtn.classList.add("primary-btn");
-    newGameBtn.addEventListener("click", () => {
-        window.location.href = window.location.pathname;
-    });
-
     card.appendChild(icon);
     card.appendChild(title);
     card.appendChild(detail);
     card.appendChild(wordReveal);
-    card.appendChild(newGameBtn);
     app.appendChild(card);
+
+    renderWordCreationCard(app, "Neue Runde: Wort für deinen Freund eingeben");
 }
 
 function renderGuesserView(secret, gameId, lang) {
@@ -130,24 +137,28 @@ function renderGuesserView(secret, gameId, lang) {
     let rowIndex = 0;
 
     renderKeyboard((key) => {
+        if (game.status !== "playing") return;
+
         if (key === "ENTER") {
             if (currentGuess.length !== WORD_LENGTH) return;
             if (!isValidWord(currentGuess, lang)) return;
 
             const result = game.guess(currentGuess);
-            renderRow(rowIndex, currentGuess, result);
-            for (let i = 0; i < WORD_LENGTH; i++) {
-                markKey(currentGuess[i], result[i]);
-            }
+            const finishedGuess = currentGuess;
+            renderRow(rowIndex, currentGuess, result, (col) => {
+                markKey(finishedGuess[col], result[col]);
+            });
             rowIndex++;
             currentGuess = "";
 
             if (game.status !== "playing") {
-                const won = game.status === "won";
-                updateStats(won);
-                renderStatsWidget();
-                saveResults(gameId, { won, tries: game.attemptsUsed });
-                renderResultView(secret, won, game.attemptsUsed);
+                setTimeout(() => {
+                    const won = game.status === "won";
+                    updateStats(won);
+                    renderStatsWidget();
+                    saveResults(gameId, { won, tries: game.attemptsUsed });
+                    renderResultView(secret, won, game.attemptsUsed);
+                }, rowAnimationTime());
             }
         } else if (key === "BACKSPACE") {
             currentGuess = currentGuess.slice(0, -1);

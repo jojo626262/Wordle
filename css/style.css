@@ -124,6 +124,22 @@ header h1 span {
     color: var(--text);
 }
 
+.cell.flip {
+    animation: flip 0.5s ease;
+}
+
+@keyframes flip {
+    0% {
+        transform: rotateX(0deg);
+    }
+    50% {
+        transform: rotateX(90deg);
+    }
+    100% {
+        transform: rotateX(0deg);
+    }
+}
+
 .cell.correct {
     background: var(--correct);
     border-color: var(--correct);
@@ -193,10 +209,28 @@ header h1 span {
     color: #ffffff;
 }
 
+.setter-card h3 {
+    margin: 0;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.setter-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    background: var(--key-bg);
+    padding: 36px 28px;
+    border-radius: 12px;
+    max-width: 360px;
+    width: 100%;
+    margin-top: 40px;
+}
+
 .lang-box {
     display: flex;
     gap: 12px;
-    margin-bottom: 20px;
 }
 
 .lang-btn {
@@ -208,12 +242,40 @@ header h1 span {
     background: var(--bg);
     color: var(--text);
     cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.15s ease;
+}
+
+.lang-btn:hover {
+    opacity: 0.85;
+}
+
+.lang-btn:active {
+    transform: scale(0.97);
 }
 
 .lang-btn.active {
     background: var(--correct);
     border-color: var(--correct);
     color: #ffffff;
+}
+
+.setter-card input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 1.2rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    border: 2px solid var(--cell-border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.setter-card input:focus {
+    border-color: var(--correct);
 }
 
 .primary-btn {
@@ -225,7 +287,15 @@ header h1 span {
     background: var(--correct);
     color: #ffffff;
     cursor: pointer;
-    margin-top: 12px;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.primary-btn:hover {
+    opacity: 0.85;
+}
+
+.primary-btn:active {
+    transform: scale(0.97);
 }
 
 .link-box {
