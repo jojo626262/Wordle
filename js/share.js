@@ -11,9 +11,9 @@ function decodeWord(word){
     }
 }
 
-function buildShareUrl(word){
+function buildShareUrl(word, lang){
     const url = new URL(window.location.href);
-    url.hash = "w=" + encodeWord(word);
+    url.hash = "w=" + encodeWord(word) + "&lang=" + lang;
     return url.toString();
 }
 
@@ -23,4 +23,9 @@ function getWordFromUrl(){
         return decodeWord(match[1]);
     }
     return null;
+}
+
+function getLangFromUrl(){
+    const match = window.location.hash.match(/lang=([a-z]+)/);
+    return match ? match[1] : "de";
 }
