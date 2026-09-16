@@ -159,5 +159,35 @@ function openLink(sandbox, url) {
     assert(sentStats.B.gamesPlayed === 1, "sentStats.B darf nicht durch friendFriendStats-Aufrufe verändert worden sein");
 })();
 
+// --- Test 5: Ein Link mit Vorergebnis darf beim mehrfachen Öffnen nur einmal zählen ---
+(function testPrevResultIsIdempotent() {
+    const aSandbox = makeSandbox();
+    const link = vm.runInContext(
+        'buildShareUrl("STUHL", "de", "B", { won: true, tries: 2 })', aSandbox
+    );
+    const gameId = link.match(/id=([^&]+)/)[1];
+
+    function simulateInit(sandbox) {
+        const prevResult = vm.runInContext("getPrevResultFromUrl()", sandbox);
+        const name = vm.runInContext("getNameFromUrl()", sandbox);
+        const processed = vm.runInContext(`hasProcessedPrevResult(${JSON.stringify(gameId)})`, sandbox);
+        if (prevResult && !processed) {
+            vm.runInContext(`updateSentStats(${JSON.stringify(name)}, ${prevResult.won})`, sandbox);
+            vm.runInContext(`markPrevResultProcessed(${JSON.stringify(gameId)})`, sandbox);
+        }
+    }
+
+    openLink(aSandbox, link);
+    simulateInit(aSandbox);
+    openLink(aSandbox, link); // Seite "neu geladen" / Link nochmal geöffnet
+    simulateInit(aSandbox);
+    openLink(aSandbox, link);
+    simulateInit(aSandbox);
+
+    const sentStats = vm.runInContext("loadSentStats()", aSandbox);
+    assert(sentStats.B && sentStats.B.gamesPlayed === 1 && sentStats.B.gamesWon === 1,
+        "Dreimaliges Öffnen desselben Links sollte nur einmal zählen, war: " + JSON.stringify(sentStats.B));
+})();
+
 console.log(`\n${passed} bestanden, ${failed} fehlgeschlagen.`);
 process.exit(failed > 0 ? 1 : 0);

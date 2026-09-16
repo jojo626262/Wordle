@@ -305,8 +305,10 @@ function initTheme() {
 
 function init() {
     const prevResult = getPrevResultFromUrl();
-    if (prevResult) {
+    const currentGameId = getGameIdFromHash();
+    if (prevResult && currentGameId && !hasProcessedPrevResult(currentGameId)) {
         updateSentStats(getNameFromUrl(), prevResult.won);
+        markPrevResultProcessed(currentGameId);
     }
 
     renderStatsWidget();

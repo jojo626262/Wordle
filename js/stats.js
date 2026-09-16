@@ -76,6 +76,14 @@ const updateSentStats = (name, won) => {
 }
 
 
+const hasProcessedPrevResult = (gameId) => {
+    return localStorage.getItem(`prevResult_${gameId}`) === "1";
+}
+
+const markPrevResultProcessed = (gameId) => {
+    localStorage.setItem(`prevResult_${gameId}`, "1");
+}
+
 function resetAllStats() {
     localStorage.removeItem("stats");
     localStorage.removeItem("friendStats");
