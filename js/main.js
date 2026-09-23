@@ -13,30 +13,8 @@ function renderWordCreationCard(container, heading, prevResult) {
     input.maxLength = WORD_LENGTH;
     input.placeholder = "Geheimwort (5 Buchstaben)";
 
-    let selectedLang = "de";
-
-    const langBox = document.createElement("div");
-    langBox.classList.add("lang-box");
-
-    const btnDe = document.createElement("button");
-    btnDe.textContent = "Deutsch";
-    btnDe.classList.add("lang-btn", "active");
-
-    const btnEn = document.createElement("button");
-    btnEn.textContent = "English";
-    btnEn.classList.add("lang-btn");
-
-    const selectLang = (lang) => {
-        selectedLang = lang;
-        btnDe.classList.toggle("active", lang === "de");
-        btnEn.classList.toggle("active", lang === "en");
-    };
-
-    btnDe.addEventListener("click", () => selectLang("de"));
-    btnEn.addEventListener("click", () => selectLang("en"));
-
-    langBox.appendChild(btnDe);
-    langBox.appendChild(btnEn);
+    // Sprachauswahl vorerst deaktiviert – nur Englisch.
+    const selectedLang = "en";
 
     const button = document.createElement("button");
     button.textContent = "Link erstellen";
@@ -80,7 +58,6 @@ function renderWordCreationCard(container, heading, prevResult) {
         card.appendChild(headingEl);
     }
 
-    card.appendChild(langBox);
     card.appendChild(nameInput);
     card.appendChild(input);
     card.appendChild(button);
@@ -333,7 +310,7 @@ function init() {
     renderStatsWidget();
 
     if (window.location.hash === "#test") {
-        renderGuesserView("STUHL", "test-" + Date.now(), "de");
+        renderGuesserView("CRANE", "test-" + Date.now(), "en");
         return;
     }
 

@@ -57,5 +57,5 @@ function getWordFromUrl(){
 
 function getLangFromUrl(){
     const match = window.location.hash.match(/lang=([a-z]+)/);
-    return match ? match[1] : "de";
+    return match ? match[1] : "en";
 }

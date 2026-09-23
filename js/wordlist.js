@@ -3,6 +3,7 @@
 // Deutsch: gefiltert aus einer offenen Wordle-Wortliste (caco3/wordle-de),
 // Wörter mit Umlauten/ß wurden entfernt (App nutzt nur A-Z).
 // Englisch: die Original-Wordle-Wortliste (tabatkins/wordle-list).
+/* Deutsch vorerst deaktiviert – nur Englisch aktiv.
 const WORD_LIST_DE = [
   "AALEN","AALES","AALST","AALTE","AASES","AASIG","ABART","ABBAT","ABBAU","ABBOG","ABELS","ABEND",
   "ABGAB","ABGAS","ABHOB","ABKAM","ABLAG","ABORT","ABRUF","ABSAH","ABSUD","ABTAT","ABTEI","ABTES",
@@ -364,6 +365,7 @@ const WORD_LIST_DE = [
   "ZUNFT","ZUNGE","ZUPFE","ZUPFT","ZURUF","ZUSAH","ZUTAT","ZUTUN","ZUVOR","ZUZOG","ZUZUG","ZWACK",
   "ZWANG","ZWECK","ZWEIG","ZWEIT","ZWERG","ZWICK","ZWING","ZWIRN","ZWIST","ZYSTE"
 ];
+*/
 
 const WORD_LIST_EN = [
   "AAHED","AALII","AAPAS","AARGH","AARTI","ABACA","ABACI","ABACK","ABACS","ABAFT","ABAHT","ABAKA",
@@ -1606,18 +1608,18 @@ const WORD_LIST_EN = [
   "ZOWIE","ZULUS","ZUPAN","ZUPAS","ZUPPA","ZURFS","ZUZIM","ZYGAL","ZYGON","ZYMES","ZYMIC"
 ];
 
-const WORD_LISTS = { de: WORD_LIST_DE, en: WORD_LIST_EN };
+const WORD_LISTS = { en: WORD_LIST_EN };
 const WORD_LENGTH = 5;
 
 function getWordList(lang) {
-  return WORD_LISTS[lang] || WORD_LISTS.de;
+  return WORD_LISTS[lang] || WORD_LISTS.en;
 }
 
 // Persönliche Anpassungen an der Wortliste (Console-Befehle), gespeichert im
 // localStorage. Überschreibt/ergänzt die feste Liste oben, ohne sie zu verändern.
 function loadWordOverrides() {
   const raw = localStorage.getItem("wordOverrides");
-  return raw ? JSON.parse(raw) : { de: { removed: [], added: [] }, en: { removed: [], added: [] } };
+  return raw ? JSON.parse(raw) : { en: { removed: [], added: [] } };
 }
 
 function saveWordOverrides(overrides) {
@@ -1625,7 +1627,7 @@ function saveWordOverrides(overrides) {
 }
 
 function removeWord(word, lang) {
-  lang = lang || "de";
+  lang = lang || "en";
   word = word.toUpperCase();
   const overrides = loadWordOverrides();
   if (!overrides[lang]) overrides[lang] = { removed: [], added: [] };
@@ -1636,7 +1638,7 @@ function removeWord(word, lang) {
 }
 
 function addWord(word, lang) {
-  lang = lang || "de";
+  lang = lang || "en";
   word = word.toUpperCase();
   if (word.length !== WORD_LENGTH) {
     console.log(`"${word}" hat nicht genau ${WORD_LENGTH} Buchstaben.`);
@@ -1660,7 +1662,7 @@ function resetWordOverrides() {
 }
 
 function isValidWord(word, lang) {
-  lang = lang || "de";
+  lang = lang || "en";
   word = word.toUpperCase();
   const overrides = loadWordOverrides()[lang] || { removed: [], added: [] };
   if (overrides.removed.includes(word)) return false;
