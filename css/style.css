@@ -47,6 +47,7 @@ body {
     align-items: center;
     min-height: 100vh;
     padding: 16px;
+    touch-action: manipulation;
 }
 
 #board-container {
@@ -267,8 +268,8 @@ header h1 span {
 }
 
 .key-wide {
-    flex-grow: 1.5;
-    max-width: 68px;
+    flex-grow: 1.1;
+    max-width: 56px;
     font-size: clamp(0.55rem, 3vw, 0.8rem);
 }
 
