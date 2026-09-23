@@ -56,7 +56,7 @@ function renderWordCreationCard(container, heading, prevResult) {
         message.textContent = "";
         const name = nameInput.value.trim();
         localStorage.setItem("myName", name);
-        const link = buildShareUrl(word, selectedLang, name, prevResult);
+        const link = buildShareUrl(word, selectedLang, name, prevResult, getFriendIdFromUrl());
         linkBox.textContent = link;
 
         if (navigator.clipboard) {
@@ -214,7 +214,7 @@ function renderGuesserView(secret, gameId, lang, fromName) {
                         triggerConfetti();
                     }
                     updateStats(won, game.attemptsUsed);
-                    updateFriendStats(fromName, won);
+                    updateFriendStats(getFriendIdFromUrl(), fromName, won, game.attemptsUsed);
                     renderStatsWidget();
                     saveResults(gameId, { won, tries: game.attemptsUsed });
                     setTimeout(() => {
@@ -237,29 +237,48 @@ function renderStatsWidget() {
     if (!widget) {
         widget = document.createElement("div");
         widget.id = "stats-widget";
+
+        const toggle = document.createElement("button");
+        toggle.id = "stats-toggle";
+        toggle.textContent = "📊";
+        toggle.setAttribute("aria-label", "Statistik anzeigen/verstecken");
+
+        const initialPanel = document.createElement("div");
+        initialPanel.id = "stats-panel";
+
+        toggle.addEventListener("click", () => {
+            initialPanel.classList.toggle("open");
+        });
+
+        widget.appendChild(initialPanel);
+        widget.appendChild(toggle);
         document.body.appendChild(widget);
     }
+
+    const panel = document.getElementById("stats-panel");
     const stats = loadStats();
-    widget.innerHTML = "";
+    panel.innerHTML = "";
 
     const totalLine = document.createElement("div");
     totalLine.textContent = `Gesamt: ${stats.gamesPlayed} | Gewonnen: ${stats.gamesWon} | Verloren: ${stats.gamesLost}`;
-    widget.appendChild(totalLine);
+    panel.appendChild(totalLine);
 
     const friendStats = loadFriendStats();
-    for (const name in friendStats) {
-        const s = friendStats[name];
+    for (const id in friendStats) {
+        const s = friendStats[id];
+        const avg = avgTries(s.distribution);
         const line = document.createElement("div");
-        line.textContent = `Gegen ${name}: ${s.gamesWon}/${s.gamesPlayed} gewonnen`;
-        widget.appendChild(line);
+        line.textContent = `Gegen ${s.name}: ${s.gamesWon}/${s.gamesPlayed} gewonnen` + (avg ? ` (Ø ${avg} Versuche)` : "");
+        panel.appendChild(line);
     }
 
     const sentStats = loadSentStats();
-    for (const name in sentStats) {
-        const s = sentStats[name];
+    for (const id in sentStats) {
+        const s = sentStats[id];
+        const avg = avgTries(s.distribution);
         const line = document.createElement("div");
-        line.textContent = `${name}: ${s.gamesWon}/${s.gamesPlayed}`;
-        widget.appendChild(line);
+        line.textContent = `${s.name}: ${s.gamesWon}/${s.gamesPlayed}` + (avg ? ` (Ø ${avg} Versuche)` : "");
+        panel.appendChild(line);
     }
 
     const distribution = stats.distribution || [0, 0, 0, 0, 0, 0];
@@ -284,7 +303,7 @@ function renderStatsWidget() {
         chart.appendChild(barRow);
     });
 
-    widget.appendChild(chart);
+    panel.appendChild(chart);
 }
 
 function initTheme() {
@@ -307,7 +326,7 @@ function init() {
     const prevResult = getPrevResultFromUrl();
     const currentGameId = getGameIdFromHash();
     if (prevResult && currentGameId && !hasProcessedPrevResult(currentGameId)) {
-        updateSentStats(getNameFromUrl(), prevResult.won);
+        updateSentStats(getFriendIdFromUrl(), getNameFromUrl(), prevResult.won, prevResult.tries);
         markPrevResultProcessed(currentGameId);
     }
 

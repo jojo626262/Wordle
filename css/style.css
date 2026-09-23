@@ -93,6 +93,26 @@ header h1 span {
     position: fixed;
     bottom: 12px;
     right: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    z-index: 20;
+}
+
+#stats-toggle {
+    background: var(--key-bg);
+    color: var(--key-text);
+    border: none;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+#stats-panel {
+    display: none;
     background: var(--key-bg);
     color: var(--key-text);
     padding: 8px 12px;
@@ -101,6 +121,10 @@ header h1 span {
     width: fit-content;
     max-width: min(280px, calc(100vw - 24px));
     overflow-wrap: break-word;
+}
+
+#stats-panel.open {
+    display: block;
 }
 
 .distribution-chart {

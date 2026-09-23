@@ -128,35 +128,37 @@ function openLink(sandbox, url) {
     openLink(aSandbox, linkBackFromB);
     const prevFromB = vm.runInContext("getPrevResultFromUrl()", aSandbox);
     const nameFromB = vm.runInContext("getNameFromUrl()", aSandbox);
-    vm.runInContext(`updateSentStats(${JSON.stringify(nameFromB)}, ${prevFromB.won})`, aSandbox);
+    const fidFromB = vm.runInContext("getFriendIdFromUrl()", aSandbox);
+    vm.runInContext(`updateSentStats(${JSON.stringify(fidFromB)}, ${JSON.stringify(nameFromB)}, ${prevFromB.won}, ${prevFromB.tries})`, aSandbox);
 
     openLink(aSandbox, linkBackFromC);
     const prevFromC = vm.runInContext("getPrevResultFromUrl()", aSandbox);
     const nameFromC = vm.runInContext("getNameFromUrl()", aSandbox);
-    vm.runInContext(`updateSentStats(${JSON.stringify(nameFromC)}, ${prevFromC.won})`, aSandbox);
+    const fidFromC = vm.runInContext("getFriendIdFromUrl()", aSandbox);
+    vm.runInContext(`updateSentStats(${JSON.stringify(fidFromC)}, ${JSON.stringify(nameFromC)}, ${prevFromC.won}, ${prevFromC.tries})`, aSandbox);
 
     const sentStats = vm.runInContext("loadSentStats()", aSandbox);
 
     assert(nameFromB === "B", "Name aus Bs Rückweg-Link sollte 'B' sein, war: " + nameFromB);
     assert(nameFromC === "C", "Name aus Cs Rückweg-Link sollte 'C' sein, war: " + nameFromC);
-    assert(sentStats.B && sentStats.B.gamesPlayed === 1 && sentStats.B.gamesWon === 1,
-        "As sentStats für B sollte 1/1 sein, war: " + JSON.stringify(sentStats.B));
-    assert(sentStats.C && sentStats.C.gamesPlayed === 1 && sentStats.C.gamesWon === 0,
-        "As sentStats für C sollte 0/1 sein, war: " + JSON.stringify(sentStats.C));
+    assert(sentStats[fidFromB] && sentStats[fidFromB].gamesPlayed === 1 && sentStats[fidFromB].gamesWon === 1,
+        "As sentStats für B sollte 1/1 sein, war: " + JSON.stringify(sentStats[fidFromB]));
+    assert(sentStats[fidFromC] && sentStats[fidFromC].gamesPlayed === 1 && sentStats[fidFromC].gamesWon === 0,
+        "As sentStats für C sollte 0/1 sein, war: " + JSON.stringify(sentStats[fidFromC]));
 
     // A rät jetzt selbst Bs und Cs neue Wörter unabhängig voneinander (friendStats).
-    vm.runInContext('updateFriendStats("B", true)', aSandbox);
-    vm.runInContext('updateFriendStats("C", false)', aSandbox);
-    vm.runInContext('updateFriendStats("B", true)', aSandbox);
+    vm.runInContext(`updateFriendStats("fid-b", "B", true, 2)`, aSandbox);
+    vm.runInContext(`updateFriendStats("fid-c", "C", false, 6)`, aSandbox);
+    vm.runInContext(`updateFriendStats("fid-b", "B", true, 4)`, aSandbox);
     const friendStats = vm.runInContext("loadFriendStats()", aSandbox);
 
-    assert(friendStats.B.gamesPlayed === 2 && friendStats.B.gamesWon === 2,
-        "As friendStats gegen B sollte 2/2 sein, war: " + JSON.stringify(friendStats.B));
-    assert(friendStats.C.gamesPlayed === 1 && friendStats.C.gamesWon === 0,
-        "As friendStats gegen C sollte 0/1 sein, war: " + JSON.stringify(friendStats.C));
+    assert(friendStats["fid-b"].gamesPlayed === 2 && friendStats["fid-b"].gamesWon === 2,
+        "As friendStats gegen B sollte 2/2 sein, war: " + JSON.stringify(friendStats["fid-b"]));
+    assert(friendStats["fid-c"].gamesPlayed === 1 && friendStats["fid-c"].gamesWon === 0,
+        "As friendStats gegen C sollte 0/1 sein, war: " + JSON.stringify(friendStats["fid-c"]));
 
     // Wichtig: friendStats und sentStats dürfen sich nicht gegenseitig beeinflusst haben.
-    assert(sentStats.B.gamesPlayed === 1, "sentStats.B darf nicht durch friendFriendStats-Aufrufe verändert worden sein");
+    assert(sentStats[fidFromB].gamesPlayed === 1, "sentStats für B darf nicht durch friendStats-Aufrufe verändert worden sein");
 })();
 
 // --- Test 5: Ein Link mit Vorergebnis darf beim mehrfachen Öffnen nur einmal zählen ---
@@ -170,9 +172,10 @@ function openLink(sandbox, url) {
     function simulateInit(sandbox) {
         const prevResult = vm.runInContext("getPrevResultFromUrl()", sandbox);
         const name = vm.runInContext("getNameFromUrl()", sandbox);
+        const fid = vm.runInContext("getFriendIdFromUrl()", sandbox);
         const processed = vm.runInContext(`hasProcessedPrevResult(${JSON.stringify(gameId)})`, sandbox);
         if (prevResult && !processed) {
-            vm.runInContext(`updateSentStats(${JSON.stringify(name)}, ${prevResult.won})`, sandbox);
+            vm.runInContext(`updateSentStats(${JSON.stringify(fid)}, ${JSON.stringify(name)}, ${prevResult.won}, ${prevResult.tries})`, sandbox);
             vm.runInContext(`markPrevResultProcessed(${JSON.stringify(gameId)})`, sandbox);
         }
     }
@@ -184,9 +187,10 @@ function openLink(sandbox, url) {
     openLink(aSandbox, link);
     simulateInit(aSandbox);
 
+    const fid = vm.runInContext("getFriendIdFromUrl()", aSandbox);
     const sentStats = vm.runInContext("loadSentStats()", aSandbox);
-    assert(sentStats.B && sentStats.B.gamesPlayed === 1 && sentStats.B.gamesWon === 1,
-        "Dreimaliges Öffnen desselben Links sollte nur einmal zählen, war: " + JSON.stringify(sentStats.B));
+    assert(sentStats[fid] && sentStats[fid].gamesPlayed === 1 && sentStats[fid].gamesWon === 1,
+        "Dreimaliges Öffnen desselben Links sollte nur einmal zählen, war: " + JSON.stringify(sentStats[fid]));
 })();
 
 console.log(`\n${passed} bestanden, ${failed} fehlgeschlagen.`);

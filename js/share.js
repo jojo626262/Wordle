@@ -15,14 +15,20 @@ function generateGameId(){
     return Math.random().toString(36).slice(2, 10);
 }
 
-function buildShareUrl(word, lang, name, prevResult){
+function buildShareUrl(word, lang, name, prevResult, friendId){
     const url = new URL(window.location.href);
-    let hash = "w=" + encodeWord(word) + "&lang=" + lang + "&id=" + generateGameId() + "&from=" + encodeURIComponent(name || "");
+    const fid = friendId || generateGameId();
+    let hash = "w=" + encodeWord(word) + "&lang=" + lang + "&id=" + generateGameId() + "&from=" + encodeURIComponent(name || "") + "&fid=" + fid;
     if (prevResult) {
         hash += "&prevWon=" + (prevResult.won ? "1" : "0") + "&prevTries=" + prevResult.tries;
     }
     url.hash = hash;
     return url.toString();
+}
+
+function getFriendIdFromUrl(){
+    const match = window.location.hash.match(/fid=([^&]+)/);
+    return match ? match[1] : null;
 }
 
 function getPrevResultFromUrl(){
